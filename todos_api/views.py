@@ -1,28 +1,25 @@
-from django.contrib.auth.models import User, Group
 from rest_framework import viewsets
+
 from todos_api.models import Todo
-from todos_api.serializers import UserSerializer, GroupSerializer, TodoSerializer
-
-
-class UserViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows users to be viewed or edited.
-    """
-    queryset = User.objects.all().order_by('-date_joined')
-    serializer_class = UserSerializer
-
-
-class GroupViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows groups to be viewed or edited.
-    """
-    queryset = Group.objects.all()
-    serializer_class = GroupSerializer
+from todos_api.serializers import TodoSerializer
 
 
 class TodoViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows todos to be viewed or edited.
+    API endpoint that allows To Do's to be viewed or edited.
     """
-    queryset = Todo.objects.all()
     serializer_class = TodoSerializer
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the To Do's
+        for the currently authenticated user.
+        """
+        return Todo.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        """
+        This view should add the currently authenticated
+        user to the created To Do's.
+        """
+        serializer.save(user=self.request.user)
